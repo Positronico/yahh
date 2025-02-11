@@ -1,11 +1,11 @@
-/*
+```
 ██╗   ██╗ █████╗ ██╗  ██╗██╗  ██╗
 ╚██╗ ██╔╝██╔══██╗██║  ██║██║  ██║
  ╚████╔╝ ███████║███████║███████║
   ╚██╔╝  ██╔══██║██╔══██║██╔══██║
    ██║   ██║  ██║██║  ██║██║  ██║
    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
-*/
+```
 # YAHH (Yet Another History Hack)
 
 YAHH is a Zsh-based tool that helps you manage separate command histories on a per-project basis. Instead of having one global history file or one per directory, YAHH allows you to keep distinct histories—called **realms**—for each of your projects.
