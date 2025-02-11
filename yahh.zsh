@@ -1,5 +1,12 @@
 # YAHH – Yet Another History Hack
 
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_FIND_NO_DUPS
+setopt HIST_SAVE_NO_DUPS
+
 export YAHH_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/yahh"
 export YAHH_CONFIG_FILE="${YAHH_CONFIG_DIR}/config.conf"
 : ${DEFAULT_HISTFILE:="$HOME/.zsh_history"}

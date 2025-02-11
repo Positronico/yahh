@@ -73,6 +73,82 @@ Set Height 700
 Hide
 Type "cd ~/Scratch/Projects" Enter
 Type "source ~/.zshrc" Enter
+Type "source ~/.p10k.zsh-simple" Enter
+Type "yahh remove" Enter
+Type "yahh create" Enter
+Type "clear" Enter
+Sleep 2
+Type "cat banner.txt" Sleep 500ms  Enter
+Show
+Sleep 2s
+Type "echo 'This is the global history realm.'" Sleep 500ms  Enter
+Type "echo 'The history has only these commands so far.'" Sleep 500ms  Enter
+Type "history" Sleep 500ms Enter
+Sleep 3s
+Type "> 'Now, let me create my first project, called Project-1'" Sleep 1s Ctrl+u
+Sleep 1
+Type "mkdir Project-1" Sleep 500ms Enter
+Sleep 1
+Type "cd Project-1" Sleep 500ms Enter
+Type "> 'Creating a new history realm inside Project-1...'" Sleep 1s Ctrl+u
+Type "yahh create" Sleep 500ms Enter
+Sleep 3
+Type "> 'Let me check the history inside Project-1...'" Sleep 1s Ctrl+u
+Type "history" Sleep 500ms Enter
+Sleep 2s
+Type "> 'It is empty!'" Sleep 2s Ctrl+u
+Type "echo This is a command inside Project-1" Sleep 500ms Enter
+Type "> 'And the history now contains...'" Sleep 1s Ctrl+u
+Type "history" Sleep 500ms Enter
+Type "> 'It does not matter how deep inside Project-1 I am...'" Sleep 1s Ctrl+u
+Type "mkdir sub" Sleep 500ms Enter
+Type "cd sub" Sleep 500ms Enter
+Type "mkdir dir" Sleep 500ms Enter
+Type "cd dir" Sleep 500ms Enter
+Type "history" Sleep 500ms Enter
+Sleep 1s
+Type "> 'They all share the same Project-1 history.'" Sleep 2s Ctrl+u
+Type "cd .." Sleep 500ms Enter
+Sleep 500ms
+Type "cd .." Sleep 500ms Enter
+Sleep 500ms
+Type "> 'But if I go outside the Project-1 directory...'" Sleep 2s Ctrl+u
+Type "cd .." Sleep 500ms Enter
+Sleep 1s
+Type "history" Sleep 500ms Enter
+Type "> '...then I start to see my global history again!'" Sleep 2s Ctrl+u
+Sleep 1s
+Type "mkdir Project-2" Sleep 500ms Enter
+Sleep 500ms
+Type "cd Project-2" Sleep 500ms Enter
+Sleep 500ms
+Type "history" Sleep 500ms Enter
+Type "> 'Project-2 still sees the global history, until a new realm is created...'" Sleep 2s Ctrl+u
+Type "yahh create" Sleep 500ms Enter
+Sleep 3
+Type "history" Sleep 500ms Enter
+Sleep 1
+Type "> 'The right realm will be activated automatically upon changing projects.'" Sleep 2s Ctrl+u
+Sleep 500ms
+Type "cd ../Project-1/sub/dir" Sleep 500ms Enter
+Sleep 500ms
+Type "history" Sleep 500ms Enter
+Sleep 3
+Type "cd -" Sleep 500ms Enter
+Sleep 500ms
+Type "history" Sleep 500ms Enter
+Type "> 'Thanks for watching!'" Sleep 5s Ctrl+u
+Hide
+Type "cd ~/Scratch/Projects" Enter
+Type "cd Project-1" Enter
+Type "yahh remove" Enter
+Type "cd ~/Scratch/Projects" Enter
+Type "rm -rf Project-1" Enter
+Type "cd Project-2" Enter
+Type "yahh remove" Enter
+Type "cd ~/Scratch/Projects" Enter
+Type "rm -rf Project-2" Enter
+Type "yahh remove" Enter
 Type "yahh remove" Enter
 Type "yahh create" Enter
 Type "clear" Enter
@@ -148,3 +224,4 @@ Type "yahh remove" Enter
 Type "cd ~/Scratch/Projects" Enter
 Type "rm -rf Project-2" Enter
 Type "yahh remove" Enter
+Type "source ~/.p10k.zsh" Enter
