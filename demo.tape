@@ -59,23 +59,27 @@ Output demo.gif
 
 Require echo
 
-Hide
+Set Margin 20
+Set MarginFill "#674EFF"
+Set BorderRadius 15
 Set Padding 20
-#Set LoopOffset 10
 Set WindowBar Colorful
 Set Shell "zsh"
-#Set FontSize 24
+Set FontSize 20
 Set FontFamily "Victor Mono"
-#Set Width 1200
-#Set Height 800
+Set Width 1200
+Set Height 700
+
+Hide
 Type "cd ~/Scratch/Projects" Enter
 Type "source ~/.zshrc" Enter
 Type "yahh remove" Enter
 Type "yahh create" Enter
 Type "clear" Enter
-Show
+Sleep 2
 Type "cat banner.txt" Sleep 500ms  Enter
-Sleep 3s
+Show
+Sleep 5s
 Type "echo 'This is the global history realm.'" Sleep 500ms  Enter
 Type "echo 'The history has only these commands so far.'" Sleep 500ms  Enter
 Type "history" Sleep 500ms Enter
@@ -132,8 +136,6 @@ Sleep 3
 Type "cd -" Sleep 500ms Enter
 Sleep 500ms
 Type "history" Sleep 500ms Enter
-Ctrl+c
-Ctrl+c
 Type "> 'Thanks for watching!'" Sleep 5s Ctrl+u
 Hide
 Type "cd ~/Scratch/Projects" Enter

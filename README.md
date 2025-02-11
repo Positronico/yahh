@@ -10,7 +10,7 @@
 
 YAHH is a Zsh-based tool that helps you manage separate command histories on a per-project basis. Instead of having one global history file or one per directory, YAHH allows you to keep distinct histories—called **realms**—for each of your projects.
 
-This makes it easier to recall recurrent commands that are specific to a given project but not necessarily all in the same directory.
+This makes it easier to recall recurrent commands that are specific to a given project or operational environment, useful in professional services, consulting and other context-switching role.
 
 ![YAHH demo](demo.gif)
 
@@ -122,12 +122,6 @@ YAHH provides several commands to manage your history realms. Use the `yahh` com
 
 - **Streamlined Workflow:**  
   By isolating command histories per realm, you reduce clutter and enhance your productivity when working on multiple projects.
-
----
-
-## Screenshots
-
-TODO: *(Add screenshots or GIFs here to visually demonstrate YAHH in action.)*
 
 ---
 
