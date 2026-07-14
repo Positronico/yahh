@@ -1,4 +1,15 @@
 # YAHH – Yet Another History Hack
+#
+# DEPRECATED: this is the v1 zsh-only implementation, kept for one release
+# so existing `source .../yahh.zsh` lines keep working. yahh v2 is a Go
+# binary supporting zsh and bash — install it and replace the source line
+# in your ~/.zshrc with:
+#
+#   eval "$(yahh init zsh)"
+#
+# v1 realm histories live in ~/.config/yahh/realm_*.history; you can seed
+# a v2 realm from one with: yahh create --from ~/.config/yahh/<file>
+# This file will be removed in v2.1.
 
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_IGNORE_DUPS

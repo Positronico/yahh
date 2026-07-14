@@ -1,0 +1,61 @@
+version: 2
+
+project_name: yahh
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/Positronico/yahh/cmd.version={{.Version}}
+      - -X github.com/Positronico/yahh/cmd.commit={{.ShortCommit}}
+      - -X github.com/Positronico/yahh/cmd.date={{.Date}}
+
+archives:
+  - formats: [tar.gz]
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+
+# The Homebrew formula in Positronico/homebrew-tap is maintained manually,
+# same as snapem/claudeq (no PAT is configured anywhere). After a release:
+#   packaging/update-formula.sh vX.Y.Z > <tap-checkout>/Formula/yahh.rb
+# See PUBLISHING.md. To automate instead, uncomment this and add a PAT with
+# write access to the tap as the HOMEBREW_TAP_GITHUB_TOKEN repo secret.
+# brews:
+#   - name: yahh
+#     repository:
+#       owner: Positronico
+#       name: homebrew-tap
+#       branch: main
+#       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+#     directory: Formula
+#     homepage: https://github.com/Positronico/yahh
+#     description: Per-project shell history realms for zsh and bash
+#     license: MIT
+#     install: |
+#       bin.install "yahh"
+#       generate_completions_from_executable(bin/"yahh", "completion")
+#     test: |
+#       system "#{bin}/yahh", "version"

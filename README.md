@@ -8,165 +8,171 @@
 ```
 # YAHH (Yet Another History Hack)
 
-YAHH is a Zsh-based tool that helps you manage separate command histories on a per-project basis. Instead of having one global history file or one per directory, YAHH allows you to keep distinct histories—called **realms**—for each of your projects.
+YAHH keeps a **separate shell command history per project**. Register a
+directory as a **realm** and every shell session inside that directory tree
+records to — and recalls from — the realm's own history file. Leave the tree
+and your global history returns, automatically.
 
-This makes it easier to recall recurrent commands that are specific to a given project or operational environment, useful in professional services, consulting and other context-switching role.
+Useful when you context-switch between many projects (consulting,
+professional services, ops): the build/test/deploy incantations of each
+project stay together, without drowning your global history.
 
 ![YAHH demo](demo.gif)
 
----
-
-## Motivation
-
-Often, we use the same commands repeatedly within a project (e.g., build, test, deploy commands) and it can be very useful to have these commands separated from the rest of our global history. I created YAHH to address this need, allowing you to isolate your project-specific commands so that your workflow remains cleaner and more focused.
+Works with **zsh** and **bash**.
 
 ---
 
-## Concept of Realms
+## How it works
 
-A **realm** is a project-specific command history. Here's how it works:
+- The `yahh` binary keeps a central **SQLite registry** mapping directories
+  to realms (`~/.local/share/yahh/yahh.db`). No marker files are dropped
+  into your projects.
+- Each realm has its own history files under `~/.local/share/yahh/histories/`,
+  in your shell's **native format** — the shell itself reads and writes them
+  with its normal history machinery.
+- A small hook (installed with one `eval` line) detects directory changes
+  and swaps `HISTFILE` accordingly. A realm covers its whole subtree; the
+  deepest matching realm wins, so realms can nest.
+- Because zsh and bash history formats are incompatible, each realm keeps
+  one file per shell. zsh and bash sessions in the same realm therefore
+  have separate histories.
 
-- **Pointer File:**  
-  In any directory where you want to activate a realm, you create a hidden `.history` file. This file contains a pointer (i.e., a file path) to a central history file. It's done by calling "yahh create".
+## Install
 
-- **Central History File:**  
-  The actual command history is stored centrally (typically under `$HOME/.config/yahh`). When you enter a directory (or any of its subdirectories) that contains a `.history` pointer file, YAHH automatically switches your active history to the associated central history file.
+### Homebrew
 
-- **Seamless Switching:**  
-  As you navigate between directories, YAHH detects the presence (or absence) of a `.history` file and switches to the appropriate history realm. If no realm is found, your default global history is used.
+```sh
+brew install Positronico/tap/yahh
+```
 
-- **Lifecycle Commands:**  
-  You can create new realms, remove them (while preserving a backup of the old history), list available realms, and prune (delete) removed realms.
+### From source
 
-  The whole yahh functionality can be disable at any given time. For example, if you want to recall a command in your global history without leaving a directory under a history realm, and your default history content will be loaded automatically.
+```sh
+go install github.com/Positronico/yahh@latest
+```
 
----
+### Activate the shell integration
 
-## Installation
+Either let yahh edit your rc file(s):
 
-### Prerequisites
+```sh
+yahh install        # detects zsh/bash, appends a guarded eval block
+```
 
-- **Zsh:** YAHH is designed to work with the Z shell.
-- **Git:** (Optional) For cloning the repository.
+or add the line yourself:
 
-### Steps
+```sh
+eval "$(yahh init zsh)"     # ~/.zshrc
+eval "$(yahh init bash)"    # ~/.bashrc
+```
 
-1. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/Positronico/yahh.git
-   cd yahh
-   ```
-
-2. **Install YAHH:**
-
-   Add the following line to your `~/.zshrc` file to source YAHH automatically:
-
-   ```zsh
-   source /path/to/yahh.sh
-   ```
-
-   Replace `/path/to/yahh.sh` with the actual path to the script.
-
-3. **Reload Your Shell:**
-
-   Restart your terminal or run:
-
-   ```bash
-   source ~/.zshrc
-   ```
-
----
+Then restart your shell. Tab completion is set up by the same line
+(Homebrew also installs completions natively).
 
 ## Usage
 
-YAHH provides several commands to manage your history realms. Use the `yahh` command followed by one of the subcommands:
+```sh
+cd ~/work/big-project
+yahh create                 # this tree is now the realm "big-project"
+yahh create --name api --import   # named realm, seeded with your last 1000 global entries
+```
 
-- **`yahh create`**  
-  Creates a new empty history realm in the current directory by:
-  - Generating a `.history` pointer file in the directory.
-  - Creating a new, empty central history file in your YAHH configuration directory.
-  - Switching your shell to use the new realm.
+| Command | What it does |
+|---|---|
+| `yahh create [dir]` | Register a realm. `--name X`, `--import[=N]` (seed from global history), `--from FILE`, `--force`. |
+| `yahh remove [dir]` | Unregister the realm covering `dir` (or `--name X`). History is archived; `--merge` folds it into your global history first (`--into FILE` to override the target), `--purge` deletes it. |
+| `yahh list` | All realms with path, entry count, last use, orphan state. `--json`, `--paths`. |
+| `yahh which [dir]` | Show which realm covers a directory. |
+| `yahh search TERM` | Search across all realm histories. `--realm X`, `--regex`, `--global`, `--json`. |
+| `yahh mv REALM DIR` | Re-point a realm after moving the project directory. |
+| `yahh rename REALM NAME` | Rename a realm. |
+| `yahh clean` | Flag realms whose directory vanished; remove them after a grace period (default 30d). `--dry-run`, `--yes`, `--grace 30d`, `--purge-archive[=90d]`. |
+| `yahh enable` / `disable` | Turn realm switching on/off globally (persisted; applies on each shell's next `cd`). |
+| `yahh status` | Current state and the realm covering the current directory. |
+| `yahh install` / `uninstall` | Manage the rc-file integration. `uninstall --purge` also deletes all data. |
+| `yahh completion <shell>` | Print the completion script (zsh, bash, fish, powershell). |
 
-- **`yahh remove`**  
-  Removes the history realm from the current directory by:
-  - Deleting the `.history` pointer file.
-  - Renaming the associated central history file (so you can review its contents later, if needed).
+### Cleanup
 
-- **`yahh which`**  
-  Outputs the path of the active `.history` pointer file defining the current realm (if any).
+Deleted a project without removing its realm? Nothing rots:
 
-- **`yahh list`**  
-  Lists all active and removed history realms stored in your YAHH configuration directory.
+- On shell startup, yahh triggers a **throttled background clean** (at most
+  once a week) that flags realms whose directories no longer exist.
+- A flagged realm is left alone for a **grace period** (30 days by default —
+  it might be an unmounted volume). If the directory comes back, the flag is
+  cleared; if not, the realm is removed and its history **archived** to
+  `~/.local/share/yahh/archive/`.
+- `yahh clean --purge-archive` deletes old archives when you're sure.
 
-- **`yahh prune`**  
-  Permanently deletes all removed (inactive) central history files after a single confirmation prompt.
+Removing a realm never silently destroys history: it is archived unless you
+pass `--purge`.
 
-- **`yahh status`**  
-  Displays the current YAHH status, including:
-  - Whether YAHH is enabled.
-  - The current working directory.
-  - The active realm (if any) and its corresponding central history file.
-  - The current active history file (`HISTFILE`).
+### Escape hatch
 
-- **`yahh disable`**  
-  Disables YAHH, causing your shell to revert to using the default global history file. This also disables the recursive lookup for a `.history` pointer file.
+Set `YAHH_DISABLE=1` in a session to bypass realm switching entirely for
+that shell, or run `yahh disable` to turn it off everywhere.
 
-- **`yahh enable`**  
-  Enables YAHH, allowing it to automatically switch realms as you change directories.
+## Notes for zsh users
 
-### When to Use YAHH
+yahh no longer forces any `setopt` on you (v1 set six). Recommended options
+that play well with per-realm histories:
 
-- **Project-Based History:**  
-  Use YAHH if you want to keep the command history for each project separate, so that you can easily recall and reuse project-specific commands without interference from your global history.
+```zsh
+setopt HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_FIND_NO_DUPS
+```
 
-- **Streamlined Workflow:**  
-  By isolating command histories per realm, you reduce clutter and enhance your productivity when working on multiple projects.
+`SAVEHIST` must be greater than 0 for histories to be written at all.
+`SHARE_HISTORY` and `INC_APPEND_HISTORY` work, but cross-shell sharing is
+scoped to whatever realm each shell is currently in.
 
----
+## Data layout
 
-## FAQ
+```
+~/.local/share/yahh/            # or $XDG_DATA_HOME/yahh, or $YAHH_DATA_DIR
+├── yahh.db                     # realm registry (SQLite)
+├── histories/                  # live realm histories (<id>-<name>.<shell>.history)
+└── archive/                    # archived histories from remove/clean
+```
 
-**Q: What happens to my existing history when I create a new realm?**  
-A: When you create a new realm, YAHH forces a clear of the in-memory history and starts with an empty history file for that realm. Commands executed prior to realm creation remain in your previous history file.
+Histories are created mode 0600 — they can contain secrets.
 
-**Q: Can I switch back to my default history after using a realm?**  
-A: Yes, using `yahh disable` will revert to your default global history file.
+## Migrating from v1
 
-**Q: How does YAHH affect performance?**  
-A: YAHH recursively searches for a .history file starting from the current directory and moving upward. In my tests on a Mac Studio M1 Pro 1TB, it performs up to 10,000 checks per second—resulting in a negligible delay (likely even faster than many of the plugins or fancy prompts you may already use). When YAHH is disabled, the recursive check is skipped entirely to optimize performance. You can enable or disable YAHH at any time as needed.
+v2 is a fresh start: the old `.history` pointer files and
+`~/.config/yahh/realm_*.history` files are not read. To carry a v1 realm
+over:
 
-**Q: Are there any limitations with using multiple realms?**  
-A: Realms are designed to be straightforward. However, if you frequently switch between many realms, it’s important to keep your configuration directory well organized. The system can flag a history file from a removed realm, but it doesn’t automatically manage or clean up history files from projects you no longer need. Therefore, it’s recommended that you regularly remove and prune outdated realms.
+```sh
+cd ~/that/project
+yahh create --from ~/.config/yahh/realm_<hash>.history
+```
 
----
+Then delete the project's `.history` pointer file and remove the old
+`source .../yahh.zsh` line from your `~/.zshrc` (the v1 script lives in
+`legacy/` for one more release).
 
 ## Changelog
 
-- **v1.0.0** - Initial release of YAHH.
-
----
+- **v2.0.0** — Rewritten in Go. bash support, central SQLite registry (no
+  more in-repo pointer files), named realms, history import/merge,
+  cross-realm search, automatic orphan cleanup, self-install, shell
+  completions, Homebrew tap.
+- **v1.0.0** — Initial release (zsh script).
 
 ## Contributing
 
-Contributions are welcome! Whether it's bug fixes, improvements, or new features, your input is highly appreciated.
+Issues and pull requests are welcome. Run the tests with:
 
-### How to Contribute
-
-- **Report Issues:**  
-  If you encounter any bugs or have suggestions for improvements, please open an issue on the repository.
-
-- **Feature Requests:**  
-  Have an idea for a new feature? Let us know by creating an issue with your suggestion.
-
-- **Pull Requests:**  
-  Fork the repository, implement your changes, and submit a pull request. Please adhere to the coding style and include tests for new features where possible.
-
----
+```sh
+go test ./...
+./test/e2e_zsh.sh
+./test/e2e_bash.sh
+```
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT](LICENSE)
 
 ---
 
