@@ -23,8 +23,11 @@ RC
 
 LOG="$TMP/session.log"
 
+# Override with e.g. YAHH_TEST_BASH=/bin/bash to exercise stock macOS bash 3.2.
+BASH_BIN="${YAHH_TEST_BASH:-bash}"
+
 run_bash() {
-  bash --rcfile "$HOME/.bashrc" -i > "$LOG" 2>&1 || true
+  "$BASH_BIN" --rcfile "$HOME/.bashrc" -i > "$LOG" 2>&1 || true
 }
 
 fail() {

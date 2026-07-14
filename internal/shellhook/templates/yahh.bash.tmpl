@@ -4,13 +4,18 @@ _yahh_default_hist="${HISTFILE:-$HOME/.bash_history}"
 _yahh_root=""
 _yahh_last_pwd=""
 _yahh_nosave=0
+# bash 3.2 (stock macOS) does not reliably track new lines for `history -a`;
+# fall back to writing the whole in-memory list there (best effort).
+if ((BASH_VERSINFO[0] >= 4)); then _yahh_hist_w=0; else _yahh_hist_w=1; fi
 
-# Switch the active history file. `history -a` must run BEFORE HISTFILE is
+# Switch the active history file. The save must run BEFORE HISTFILE is
 # reassigned so this session's new lines land in the file they belong to.
 _yahh_swap() {
   local histfile="$1"
   [[ "$histfile" == "$HISTFILE" ]] && return 0
-  (( _yahh_nosave )) || history -a
+  if (( ! _yahh_nosave )); then
+    if (( _yahh_hist_w )); then history -w; else history -a; fi
+  fi
   HISTFILE="$histfile"
   history -c
   [[ -s "$histfile" ]] && history -r

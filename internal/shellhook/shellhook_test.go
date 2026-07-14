@@ -48,8 +48,13 @@ func TestRenderBash(t *testing.T) {
 			t.Errorf("bash script missing %q", want)
 		}
 	}
-	if !strings.Contains(out, "history -a\n  HISTFILE=") {
-		t.Error("history -a must run before HISTFILE is reassigned")
+	saveIdx := strings.Index(out, "history -a")
+	assignIdx := strings.Index(out, "HISTFILE=\"$histfile\"")
+	if saveIdx < 0 || assignIdx < 0 || saveIdx > assignIdx {
+		t.Error("the history save must run before HISTFILE is reassigned")
+	}
+	if !strings.Contains(out, "history -w") {
+		t.Error("missing the bash 3.2 history -w fallback")
 	}
 }
 
