@@ -31,6 +31,9 @@ var resolveCmd = &cobra.Command{
 			return exitCode(1)
 		}
 		defer db.Close()
+		// The hooks call resolve when the snapshot is unavailable; heal it
+		// so subsequent directory changes stay in pure shell.
+		_ = db.EnsureSnapshot()
 		enabled, err := db.Enabled()
 		if err != nil {
 			return exitCode(1)

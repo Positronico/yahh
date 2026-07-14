@@ -9,12 +9,15 @@ import (
 )
 
 func TestRenderZsh(t *testing.T) {
-	out, err := Render("zsh", Params{BinPath: "/opt/bin/yahh", AutoClean: true, Completions: true})
+	out, err := Render("zsh", Params{BinPath: "/opt/bin/yahh", DataDir: "/data/yahh", AutoClean: true, Completions: true})
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, want := range []string{
 		"_yahh_bin='/opt/bin/yahh'",
+		"_yahh_snap='/data/yahh/snapshot'",
+		"_yahh_lookup",
+		"yahh1 enabled=",
 		"add-zsh-hook chpwd _yahh_chpwd",
 		"add-zsh-hook precmd _yahh_startup",
 		"clean --auto",
@@ -33,12 +36,15 @@ func TestRenderZsh(t *testing.T) {
 }
 
 func TestRenderBash(t *testing.T) {
-	out, err := Render("bash", Params{BinPath: "/opt/bin/yahh", AutoClean: true, Completions: true})
+	out, err := Render("bash", Params{BinPath: "/opt/bin/yahh", DataDir: "/data/yahh", AutoClean: true, Completions: true})
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, want := range []string{
 		"_yahh_bin='/opt/bin/yahh'",
+		"_yahh_snap='/data/yahh/snapshot'",
+		"_yahh_lookup",
+		"yahh1 enabled=",
 		"PROMPT_COMMAND",
 		"history -a",
 		"clean --auto",
@@ -59,7 +65,7 @@ func TestRenderBash(t *testing.T) {
 }
 
 func TestRenderFlagsOff(t *testing.T) {
-	out, err := Render("zsh", Params{BinPath: "yahh"})
+	out, err := Render("zsh", Params{BinPath: "yahh", DataDir: "/data"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +75,7 @@ func TestRenderFlagsOff(t *testing.T) {
 }
 
 func TestRenderUnsupportedShell(t *testing.T) {
-	if _, err := Render("fish", Params{BinPath: "yahh"}); err == nil {
+	if _, err := Render("fish", Params{BinPath: "yahh", DataDir: "/data"}); err == nil {
 		t.Error("expected error for unsupported shell")
 	}
 }
@@ -88,7 +94,7 @@ func TestScriptSyntax(t *testing.T) {
 			t.Logf("%s not installed; skipping syntax check", shell)
 			continue
 		}
-		out, err := Render(shell, Params{BinPath: "/opt/bin/yahh", AutoClean: true, Completions: true})
+		out, err := Render(shell, Params{BinPath: "/opt/bin/yahh", DataDir: "/data/yahh", AutoClean: true, Completions: true})
 		if err != nil {
 			t.Fatal(err)
 		}

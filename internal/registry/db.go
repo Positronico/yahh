@@ -13,6 +13,9 @@ import (
 type DB struct {
 	sql     *sql.DB
 	dataDir string
+	// dirty marks that a snapshot-relevant mutation happened; Close then
+	// rewrites the shell-readable snapshot (see snapshot.go).
+	dirty bool
 }
 
 // Open opens (creating if needed) the registry database under dataDir.
@@ -36,8 +39,14 @@ func Open(dataDir string) (*DB, error) {
 	return &DB{sql: sqlDB, dataDir: dataDir}, nil
 }
 
-// Close closes the underlying database.
-func (d *DB) Close() error { return d.sql.Close() }
+// Close rewrites the shell snapshot if realms or the enabled flag changed,
+// then closes the underlying database.
+func (d *DB) Close() error {
+	if d.dirty {
+		_ = d.WriteSnapshot()
+	}
+	return d.sql.Close()
+}
 
 // DataDir returns the data directory this registry lives in.
 func (d *DB) DataDir() string { return d.dataDir }

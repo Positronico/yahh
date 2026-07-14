@@ -58,6 +58,7 @@ func (d *DB) Create(name, path string, now time.Time) (Realm, error) {
 		if err != nil {
 			return Realm{}, err
 		}
+		d.dirty = true
 		return Realm{ID: id, Name: candidate, Path: path, CreatedAt: time.Unix(now.Unix(), 0)}, nil
 	}
 	return Realm{}, fmt.Errorf("could not find a free name for %q", base)
@@ -123,26 +124,37 @@ func (d *DB) Resolve(dir string) (Realm, bool, error) {
 // Delete removes a realm row.
 func (d *DB) Delete(id int64) error {
 	_, err := d.sql.Exec("DELETE FROM realms WHERE id = ?", id)
+	if err == nil {
+		d.dirty = true
+	}
 	return err
 }
 
 // SetPath re-points a realm at a new directory and clears any orphan flag.
 func (d *DB) SetPath(id int64, path string) error {
 	_, err := d.sql.Exec("UPDATE realms SET path = ?, orphaned_at = NULL WHERE id = ?", path, id)
-	if err != nil && isUniqueErr(err, "realms.path") {
-		return ErrPathRegistered
+	if err != nil {
+		if isUniqueErr(err, "realms.path") {
+			return ErrPathRegistered
+		}
+		return err
 	}
-	return err
+	d.dirty = true
+	return nil
 }
 
 // SetName renames a realm. The caller is responsible for renaming the
 // derived history files (see HistFile).
 func (d *DB) SetName(id int64, name string) error {
 	_, err := d.sql.Exec("UPDATE realms SET name = ? WHERE id = ?", name, id)
-	if err != nil && isUniqueErr(err, "realms.name") {
-		return ErrNameTaken
+	if err != nil {
+		if isUniqueErr(err, "realms.name") {
+			return ErrNameTaken
+		}
+		return err
 	}
-	return err
+	d.dirty = true
+	return nil
 }
 
 // TouchLastUsed updates last_used_at, but only when the stored value is

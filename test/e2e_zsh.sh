@@ -53,6 +53,8 @@ EOF
 
 realm_file="$YAHH_DATA_DIR/histories/1-proj.zsh.history"
 [ -f "$realm_file" ] || fail "realm history file not created"
+grep -q "^yahh1 enabled=1$" "$YAHH_DATA_DIR/snapshot" || fail "snapshot not written after create"
+grep -q "proj" "$YAHH_DATA_DIR/snapshot" || fail "realm missing from snapshot"
 grep -q "marker-in-realm" "$realm_file" || fail "realm command missing from realm history"
 grep -q "marker-in-subdir" "$realm_file" || fail "subdirectory command missing from realm history"
 grep -q "marker-in-realm" "$HOME/.zsh_history" && fail "realm command leaked into global history"

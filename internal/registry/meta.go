@@ -45,7 +45,11 @@ func (d *DB) SetEnabled(enabled bool) error {
 	if !enabled {
 		v = "0"
 	}
-	return d.setMeta("enabled", v)
+	if err := d.setMeta("enabled", v); err != nil {
+		return err
+	}
+	d.dirty = true
+	return nil
 }
 
 // LastCleanAt returns when clean last ran (zero time if never).

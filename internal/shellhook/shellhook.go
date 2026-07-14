@@ -6,6 +6,7 @@ package shellhook
 import (
 	"embed"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"text/template"
 )
@@ -16,6 +17,7 @@ var templates embed.FS
 // Params configures the rendered init script.
 type Params struct {
 	BinPath     string // absolute path to the yahh binary, NOT yet quoted
+	DataDir     string // yahh data directory, NOT yet quoted
 	AutoClean   bool   // trigger a throttled background clean at startup
 	Completions bool   // source `yahh completion <shell>` when available
 }
@@ -32,9 +34,10 @@ func Render(shell string, p Params) (string, error) {
 	var b strings.Builder
 	err = tmpl.Execute(&b, struct {
 		BinPath     string
+		SnapPath    string
 		AutoClean   bool
 		Completions bool
-	}{Quote(p.BinPath), p.AutoClean, p.Completions})
+	}{Quote(p.BinPath), Quote(filepath.Join(p.DataDir, "snapshot")), p.AutoClean, p.Completions})
 	return b.String(), err
 }
 

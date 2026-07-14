@@ -34,6 +34,10 @@ Works with **zsh** and **bash**.
 - A small hook (installed with one `eval` line) detects directory changes
   and swaps `HISTFILE` accordingly. A realm covers its whole subtree; the
   deepest matching realm wins, so realms can nest.
+- The binary mirrors the registry into a tiny `snapshot` file that the hook
+  resolves in **pure shell** — a `cd` costs ~0.1 ms with yahh active
+  (~0.02 ms inside a realm), and the binary only runs when realms actually
+  change or a realm is entered (background bookkeeping).
 - Because zsh and bash history formats are incompatible, each realm keeps
   one file per shell. zsh and bash sessions in the same realm therefore
   have separate histories.
@@ -131,9 +135,13 @@ scoped to whatever realm each shell is currently in.
 ```
 ~/.local/share/yahh/            # or $XDG_DATA_HOME/yahh, or $YAHH_DATA_DIR
 ├── yahh.db                     # realm registry (SQLite)
+├── snapshot                    # shell-readable mirror used by the cd hook
 ├── histories/                  # live realm histories (<id>-<name>.<shell>.history)
 └── archive/                    # archived histories from remove/clean
 ```
+
+The `snapshot` file is a derived cache — safe to delete; the hook falls
+back to the binary, which regenerates it.
 
 Histories are created mode 0600 — they can contain secrets.
 
@@ -154,6 +162,8 @@ Then delete the project's `.history` pointer file and remove the old
 
 ## Changelog
 
+- **v2.1.0** — Snapshot-based resolution: directory changes are handled in
+  pure shell (~0.1 ms, down from ~9 ms), including when yahh is disabled.
 - **v2.0.0** — Rewritten in Go. bash support, central SQLite registry (no
   more in-repo pointer files), named realms, history import/merge,
   cross-realm search, automatic orphan cleanup, self-install, shell

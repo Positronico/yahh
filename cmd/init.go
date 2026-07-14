@@ -27,6 +27,7 @@ var initCmd = &cobra.Command{
 		}
 		script, err := shellhook.Render(args[0], shellhook.Params{
 			BinPath:     bin,
+			DataDir:     dataDir(),
 			AutoClean:   !initNoAutoClean,
 			Completions: !initNoCompletion,
 		})
